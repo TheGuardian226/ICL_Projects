@@ -41,28 +41,47 @@ for images, labels in train_loader:
 import torch
 from PIL import Image
 import torchvision.transforms as transforms
-  
-# Read a PIL image
-image = Image.open('input_image.jpg').convert('L')
-  
-# Define a transform to convert PIL 
-# image to a Torch tensor
-transform = transforms.Compose([
-    transforms.PILToTensor()
-])
-  
-# transform = transforms.PILToTensor()
-# Convert the PIL image to Torch tensor
-img_tensor = transform(image)
 
-tensor = img_tensor.view(-1, 28*28)
+exit = False
 
-tensor = tensor/255.0
+while not exit:
+    print("1. Predict")
+    print("2. Exit")
+    choice = int(input("Enter your choice: "))
+    
+    if choice == 1:
+        image_name = input("Enter the name of the image you want to classify with extension included: ")
+        
+        # Read a PIL image
+        try:
+            image = Image.open(image_name).convert('L')
+        except:
+            print("Error: Image not found")
+            continue
+        image1 = image.resize((28, 28)) # Resize the image to 28x28
+        # Define a transform to convert PIL 
+        # image to a Torch tensor
+        transform = transforms.Compose([
+            transforms.PILToTensor()
+        ])
+        
+        # transform = transforms.PILToTensor()
+        # Convert the PIL image to Torch tensor
+        img_tensor = transform(image1)
 
-layer_1_output = torch.matmul(tensor, W1) + B1 
-layer_2_input = F.relu(layer_1_output) # Apply the ReLU activation function
-layer_2_output = torch.matmul(layer_2_input, W2) + B2 
-predictions = torch.argmax(layer_2_output, dim=1) # Get the index of the highest value in each row
+        tensor = img_tensor.view(-1, 28*28)
 
-print(predictions) # Print the predictions
+        tensor = tensor/255.0
 
+        layer_1_output = torch.matmul(tensor, W1) + B1 
+        layer_2_input = F.relu(layer_1_output) # Apply the ReLU activation function
+        layer_2_output = torch.matmul(layer_2_input, W2) + B2 
+        predictions = torch.argmax(layer_2_output, dim=1) # Get the index of the highest value in each row
+
+        print("The predicted number is:", predictions) # Print the predictions
+        
+        continue
+    
+    elif choice == 2:
+        exit = True
+        print("Exiting...")
