@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from torchvision import datasets, transforms # import datasets and transforms from torchvision
-import torch.nn.functional as F # import the functional module from torch.nn
+from torchvision import datasets, transforms # Import datasets and transforms from torchvision
+import torch.nn.functional as F # Import the functional module from torch.nn
 
 mnist_train = datasets.MNIST(root="./datasets", train=True, transform=transforms.ToTensor(), download=True)
 mnist_test = datasets.MNIST(root="./datasets", train=False, transform=transforms.ToTensor(), download=True)
@@ -23,33 +23,46 @@ optimizer = torch.optim.SGD([W1, B1, W2, B2], lr=0.1)
 
 # Iterate 
 for images, labels in train_loader:
-    optimizer.zero_grad() # reset the gradients to 0
+    optimizer.zero_grad() # Reset the gradients to 0
     
     # Forward pass
-    x1 = images.view(-1, 28*28) # flatten the images into a vector
+    x1 = images.view(-1, 28*28) # Flatten the images into a vector
     y1 = torch.matmul(x1, W1) + B1 # y1 is the output of the first layer
     
-    x2 = F.relu(y1) # apply the ReLU activation function
+    x2 = F.relu(y1) # Apply the ReLU activation function
     y2 = torch.matmul(x2, W2) + B2 # y2 is the output of the second layer
-    #Compute the loss over both layers
+    # Compute the loss over both layers
     cross_entropy = F.cross_entropy(y2, labels)
     # Backward pass
-    cross_entropy.backward() # compute the gradients of W and b with respect to the loss
+    cross_entropy.backward() # Compute the gradients of W and b with respect to the loss
     optimizer.step()
 
-## Testing
-correct = 0
-total = len(mnist_test)
+# Model will take in input files and output the predicted label
+import torch
+from PIL import Image
+import torchvision.transforms as transforms
+  
+# Read a PIL image
+image = Image.open('input_image.jpg').convert('L')
+  
+# Define a transform to convert PIL 
+# image to a Torch tensor
+transform = transforms.Compose([
+    transforms.PILToTensor()
+])
+  
+# transform = transforms.PILToTensor()
+# Convert the PIL image to Torch tensor
+img_tensor = transform(image)
 
-with torch.no_grad():
-    # Iterate over the test data
-    for images, labels in test_loader:
-        x1 = images.view(-1, 28*28)
-        y1 = torch.matmul(x1, W1) + B1
-        x2 = F.relu(y1)
-        y2 = torch.matmul(x2, W2) + B2
-        
-        predictions = torch.argmax(y2, dim=1)
-        correct += torch.sum((predictions == labels).float())
+tensor = img_tensor.view(-1, 28*28)
 
-print("Accuracy: {}".format(correct/total))
+tensor = tensor/255.0
+
+layer_1_output = torch.matmul(tensor, W1) + B1 
+layer_2_input = F.relu(layer_1_output) # Apply the ReLU activation function
+layer_2_output = torch.matmul(layer_2_input, W2) + B2 
+predictions = torch.argmax(layer_2_output, dim=1) # Get the index of the highest value in each row
+
+print(predictions) # Print the predictions
+
